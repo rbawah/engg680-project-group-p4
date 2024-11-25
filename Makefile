@@ -12,6 +12,7 @@ help:
 	@echo "Usage:"
 	@echo "  make venv            Create a Python virtual environment"
 	@echo "  make install         Install Python requirements"
+	@echo "  make activate        Activate the Python virtual environment"
 	@echo "  make clean           Remove the virtual environment and temporary files"
 
 venv: $(VENV_DIR)
@@ -25,3 +26,15 @@ install: venv
 	$(VENV_DIR)/bin/pip install --upgrade pip
 	$(VENV_DIR)/bin/pip install -r $(REQUIREMENTS)
 	@echo "Requirements installed successfully"
+
+activate: venv
+	@echo "To activate the virtual environment, run:"
+	@echo "$(MAGENTA)source $(VENV_DIR)/bin/activate$(RESET)"
+
+clean:
+	@echo "Removing virtual environment and temporary files..."
+	rm -rf $(VENV_DIR)
+	@find . -type d -name "__pycache__" -exec rm -rf {} +
+	@find . -type f -name "*.pyc" -exec rm -f {} +
+	@find . -type f -name "*.pyo" -exec rm -f {} +
+	@echo "Cleaned up all generated files and the virtual environment"
