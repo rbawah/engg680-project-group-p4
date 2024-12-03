@@ -119,3 +119,58 @@ def validate_image(path):
         return True
     except:
         return False
+    
+class GarbageImageFolder(datasets.DatasetFolder):
+    def __init__(
+        self,
+        root: str,
+        transform: Optional[Callable] = None,
+        target_transform: Optional[Callable] = None,
+        loader: Callable[[str], Any] = default_loader,
+        is_valid_file: Optional[Callable[[str], bool]] = None,
+    ):
+        super().__init__(
+            root,
+            loader,
+            IMG_EXTENSIONS if is_valid_file is None else None,
+            transform=transform,
+            target_transform=target_transform,
+            is_valid_file=is_valid_file,
+        )
+        self.imgs = self.samples
+
+    def __setitem__(self, idx, image_element):
+        self.imgs[idx] = image_element
+
+    def __getitem__(self, index):
+        """
+        Args:
+            index (int): Index
+        Returns:
+        """
+        if isinstance(index, slice):
+            sample = None
+            sample_list = []
+            # step = 1 if index.step is None else index.step
+            # start = index.start
+            # stop = index.stop
+            images = self.samples[index]
+            for path, target in images:
+                sample = self.loader(path)
+                if self.transform is not None:
+                    sample = self.transform(sample)
+                if self.target_transform is not None:
+                    target = self.target_transform(target)
+                sample_list.append((sample, target))
+            return sample_list
+
+        else:
+            path, target = self.samples[index]
+            sample = self.loader(path)
+            if self.transform is not None:
+                sample = self.transform(sample)
+            if self.target_transform is not None:
+                target = self.target_transform(target)
+
+            return sample, target
+
