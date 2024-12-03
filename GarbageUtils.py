@@ -24,6 +24,7 @@ def append_value(dict_obj, key, value):
         dict_obj[key].append(value)
     else:
         dict_obj[key] = [value]
+sisir-suberi
 
 # use random_split to split data into train, val, and test sets
 def split_dataset(dataset, test_size = 0.2, val_size = None):
@@ -49,3 +50,5 @@ def validate_image(path):
         return True
     except:
         return False
+
+main
