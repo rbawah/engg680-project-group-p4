@@ -24,7 +24,7 @@ def append_value(dict_obj, key, value):
         dict_obj[key].append(value)
     else:
         dict_obj[key] = [value]
-sisir-suberi
+
 
 # use random_split to split data into train, val, and test sets
 def split_dataset(dataset, test_size = 0.2, val_size = None):
@@ -51,4 +51,71 @@ def validate_image(path):
     except:
         return False
 
-main
+class GarbageDataset(Dataset):
+    def __init__(self, garbage_data, loader=default_loader, is_subset=False, transform=None, target_transform=None):
+        self.garbage_data = garbage_data
+        self.transform = transform
+        self.target_transform = target_transform
+        self.loader = loader
+        self.is_subset = is_subset
+        if not is_subset:
+            self.filenames = self.get_filenames()
+            self.input_ids, self.attention_mask = self.tokenize_filenames()
+            self.labels = None
+        
+    def __len__(self):
+        return len(self.garbage_data)
+    
+    def __setitem__(self, idx, element):
+        self.garbage_data[idx] = element
+
+    def __getitem__(self, index):
+        if self.is_subset:
+            path, label, input_ids, attention_mask = self.garbage_data[index]
+            image_file = self.loader(path)
+            if self.transform is not None:
+                image_file = self.transform(image_file)
+            if self.target_transform is not None:
+                label = self.target_transform(label)
+            return image_file, label, input_ids, attention_mask
+        else:
+            path, label = self.garbage_data[index]
+            image_file = self.loader(path)
+            input_ids = self.input_ids[index]
+            attention_mask = self.attention_mask[index]
+            if self.transform:
+                image_file = self.transform(image_file)
+            return image_file, label, input_ids, attention_mask
+
+    def preprocess_filename(self, input_str):
+        input_str = input_str.split("\\")[-1].split(".")[0]
+        if not re.match(r".*[A-Za-z]", input_str):
+            return None
+        input_str = input_str.replace(r"#U0640", "_")
+        input_str = re.sub(r"\d", "", input_str)
+        input_str = re.sub(r"_", " ", input_str)
+        input_str = re.sub(r"-", " ", input_str)
+        input_str = re.sub(r"\(\)", "", input_str)
+        input_str = input_str.strip()
+        input_str = input_str.lower()
+        return input_str
+
+    def get_filenames(self):
+        filenames = []
+        for image_name, _ in self.garbage_data: #.imgs:
+            image_name = self.preprocess_filename(image_name)
+            filenames.append(image_name)
+        return filenames
+
+    def tokenize_filenames(self):
+        tok_dict = tokenizer(self.filenames, padding=True, truncation=True, return_tensors='pt')
+        return tok_dict["input_ids"], tok_dict["attention_mask"]
+
+
+
+def validate_image(path):
+    try:
+        im = Image.open(path)
+        return True
+    except:
+        return False
