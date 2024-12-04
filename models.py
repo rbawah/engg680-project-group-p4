@@ -71,6 +71,7 @@ def initialize_vision_model(model_name, num_classes, feature_extract, multimodal
         
     return model_ft, input_size
 
+
 def initialize_language_model(model_name, num_classes, multimodal=False):
     model = None
     tokenizer = None
